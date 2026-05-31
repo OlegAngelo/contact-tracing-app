@@ -827,6 +827,32 @@ footer {
     transform: translateY(0);
 }
 
+.btn-register {
+    flex: 1;
+    padding: 12px 20px;
+    background-color: #1a202c;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-register:hover {
+    background-color: #0f1419;
+    transform: translateY(-2px);
+}
+
+.btn-register:active {
+    transform: translateY(0);
+}
+
 .btn-cancel {
     flex: 1;
     padding: 12px 20px;
@@ -842,6 +868,82 @@ footer {
 
 .btn-cancel:hover {
     background-color: #cbd5e0;
+}
+
+/* Register Form */
+.register-form-container {
+    display: none;
+    animation: fadeIn 0.3s ease;
+}
+
+.register-form-box {
+    background: white;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.register-form-box h2 {
+    font-size: 24px;
+    color: #1a202c;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.register-subtitle {
+    font-size: 14px;
+    color: #718096;
+    margin-bottom: 24px;
+}
+
+.register-form-box .form-group {
+    margin-bottom: 20px;
+}
+
+.register-form-box .full-width {
+    grid-column: 1 / -1;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+.register-form-box label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1a202c;
+    margin-bottom: 8px;
+}
+
+.required {
+    color: #e53e3e;
+}
+
+.register-form-box input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 14px;
+    background-color: #f7fafc;
+    color: #1a202c;
+    transition: all 0.3s ease;
+}
+
+.register-form-box input::placeholder {
+    color: #a0aec0;
+}
+
+.register-form-box input:focus {
+    outline: none;
+    border-color: #4361ee;
+    background-color: white;
+    box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
 }
 
 /* Modal */
@@ -1107,5 +1209,18 @@ footer {
         padding: 25px 20px;
         width: 90%;
         max-width: 100%;
+    }
+
+    .register-form-box {
+        padding: 30px 20px;
+        max-width: 100%;
+    }
+
+    .register-form-box h2 {
+        font-size: 20px;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
     }
 }

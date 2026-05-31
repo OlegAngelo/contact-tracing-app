@@ -44,7 +44,7 @@ require_once __DIR__ . '/../includes/icons.php';
                     <p>Returning visitor? Enter your ID number to sign in.</p>
                 </a>
 
-                <a href="register.php" class="action-card">
+                <a href="#" class="action-card" id="register-btn">
                     <div class="card-icon register-icon"><?php echo Icons::register(); ?></div>
                     <h3>Register</h3>
                     <p>First time visitor? Register your information here.</p>
@@ -72,6 +72,67 @@ require_once __DIR__ . '/../includes/icons.php';
                         <div class="form-actions">
                             <button type="submit" class="btn-signin">Sign In</button>
                             <button type="button" class="btn-cancel" id="cancel-signin">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Register Form -->
+            <div class="register-form-container" id="register-form-container">
+                <div class="register-form-box">
+                    <h2>Register New User</h2>
+                    <p class="register-subtitle">Please fill in all required fields. You will be automatically signed in after registration.</p>
+
+                    <form id="register-form">
+                        <div class="form-group full-width">
+                            <label for="reg-id-number">ID Number (if USC student/faculty/staff)</label>
+                            <input type="text" id="reg-id-number" name="usc_id" placeholder="241105130" required autocomplete="off">
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="first-name">First Name <span class="required">*</span></label>
+                                <input type="text" id="first-name" name="first_name" placeholder="Juan" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="middle-name">Middle Name <span class="required">*</span></label>
+                                <input type="text" id="middle-name" name="middle_name" placeholder="Dela">
+                            </div>
+                            <div class="form-group">
+                                <label for="last-name">Last Name <span class="required">*</span></label>
+                                <input type="text" id="last-name" name="last_name" placeholder="Cruz" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="barangay">Barangay <span class="required">*</span></label>
+                                <input type="text" id="barangay" name="barangay" placeholder="Capitol Site" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="city">City/Town <span class="required">*</span></label>
+                                <input type="text" id="city" name="city" placeholder="Cebu City" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="province">Province <span class="required">*</span></label>
+                                <input type="text" id="province" name="province" placeholder="Cebu" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="contact-number">Contact Number <span class="required">*</span></label>
+                                <input type="tel" id="contact-number" name="contact_number" placeholder="09123456789" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="email">Email <span class="required">*</span></label>
+                                <input type="email" id="email" name="email" placeholder="juan.delacruz@usc.edu.ph" required>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn-register">Register & Sign In</button>
+                            <button type="button" class="btn-cancel" id="cancel-register">Cancel</button>
                         </div>
                     </form>
                 </div>
@@ -184,10 +245,14 @@ require_once __DIR__ . '/../includes/icons.php';
         const userToggle = document.getElementById('user-toggle');
         const adminToggle = document.getElementById('admin-toggle');
         const signinBtn = document.getElementById('signin-btn');
-        const cancelBtn = document.getElementById('cancel-signin');
+        const registerBtn = document.getElementById('register-btn');
+        const cancelSigninBtn = document.getElementById('cancel-signin');
+        const cancelRegisterBtn = document.getElementById('cancel-register');
         const signinForm = document.getElementById('signin-form');
+        const registerForm = document.getElementById('register-form');
         const actionCardsContainer = document.getElementById('action-cards-container');
         const signinFormContainer = document.getElementById('signin-form-container');
+        const registerFormContainer = document.getElementById('register-form-container');
         const modal = document.getElementById('confirmation-modal');
         const modalOverlay = document.getElementById('modal-overlay');
         const modalCloseBtn = document.getElementById('modal-close');
@@ -206,12 +271,21 @@ require_once __DIR__ . '/../includes/icons.php';
         function showActionCards() {
             actionCardsContainer.style.display = 'grid';
             signinFormContainer.style.display = 'none';
+            registerFormContainer.style.display = 'none';
         }
 
         function showSignInForm() {
             actionCardsContainer.style.display = 'none';
             signinFormContainer.style.display = 'block';
+            registerFormContainer.style.display = 'none';
             idInput.focus();
+        }
+
+        function showRegisterForm() {
+            actionCardsContainer.style.display = 'none';
+            signinFormContainer.style.display = 'none';
+            registerFormContainer.style.display = 'block';
+            document.getElementById('reg-id-number').focus();
         }
 
         function closeModal() {
@@ -223,7 +297,14 @@ require_once __DIR__ . '/../includes/icons.php';
             e.preventDefault();
             showSignInForm();
         });
-        cancelBtn.addEventListener('click', showActionCards);
+
+        registerBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            showRegisterForm();
+        });
+
+        cancelSigninBtn.addEventListener('click', showActionCards);
+        cancelRegisterBtn.addEventListener('click', showActionCards);
         modalCloseBtn.addEventListener('click', closeModal);
         modalCancelBtn.addEventListener('click', closeModal);
         modalOverlay.addEventListener('click', closeModal);
@@ -261,6 +342,38 @@ require_once __DIR__ . '/../includes/icons.php';
                     modalOverlay.classList.add('active');
                 } else {
                     alert(data.message || 'User not found');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            }
+        });
+
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(registerForm);
+            const data = Object.fromEntries(formData);
+
+            if (!data.usc_id || !data.first_name || !data.last_name || !data.barangay || !data.city || !data.province || !data.contact_number || !data.email) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            try {
+                const response = await fetch('api/register.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: new URLSearchParams(data)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    window.location.href = 'confirmation.php';
+                } else {
+                    alert(result.message || 'Registration failed');
                 }
             } catch (error) {
                 console.error('Error:', error);
