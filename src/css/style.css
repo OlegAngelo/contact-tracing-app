@@ -1528,11 +1528,78 @@ footer {
     gap: 12px;
 }
 
-.search-input-group {
+/* Toggle Tabs */
+.toggle-tabs {
+    position: relative;
+    width: 100%;
+    max-width: 600px;
+    height: 50px;
+    background-color: #ececf0;
+    border-radius: 30px;
     display: flex;
     align-items: center;
-    gap: 12px;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.toggle-tabs input {
+    display: none;
+}
+
+.toggle-label {
+    position: relative;
     flex: 1;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #1a202c;
+    cursor: pointer;
+    z-index: 2;
+    transition: color 0.3s ease;
+}
+
+.toggle-label .tab-icon {
+    font-size: 14px;
+}
+
+#tab-city:checked ~ .city-label,
+#tab-barangay:checked ~ .barangay-label,
+#tab-province:checked ~ .province-label,
+#tab-usc_id:checked ~ .id-label,
+#tab-name:checked ~ .name-label {
+    color: #4361ee;
+}
+
+.toggle-slider {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: calc(20% - 4px);
+    height: calc(100% - 8px);
+    background: #fff;
+    border-radius: 25px;
+    transition: left 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    z-index: 1;
+}
+
+#tab-barangay:checked ~ .toggle-slider {
+    left: calc(20% + 4px);
+}
+
+#tab-province:checked ~ .toggle-slider {
+    left: calc(40% + 4px);
+}
+
+#tab-usc_id:checked ~ .toggle-slider {
+    left: calc(60% + 4px);
+}
+
+#tab-name:checked ~ .toggle-slider {
+    left: calc(80% + 4px);
 }
 
 .search-input {
@@ -1662,6 +1729,20 @@ footer {
 
     .search-section {
         padding: 20px;
+    }
+
+    .toggle-tabs {
+        max-width: 100%;
+        height: 48px;
+    }
+
+    .toggle-label {
+        font-size: 12px;
+        gap: 4px;
+    }
+
+    .toggle-label .tab-icon {
+        display: none;
     }
 
     .search-input-group {

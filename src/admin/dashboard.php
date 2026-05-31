@@ -12,13 +12,31 @@ if (!isset($_SESSION['admin_logged_in'])) {
 
 $user = new User($conn);
 $signLog = new SignLog($conn);
-$searchType = isset($_POST['searchType']) ? $_POST['searchType'] : '';
+$searchType = isset($_POST['searchType']) ? $_POST['searchType'] : 'city';
 $searchValue = isset($_POST['searchValue']) ? $_POST['searchValue'] : '';
 $results = [];
 
+// Load all users on page load
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($searchValue)) {
     $users = $user->search($searchType, $searchValue);
     foreach ($users as $u) {
+        $results[] = [
+            'type' => 'user',
+            'user_id' => $u['id'],
+            'first_name' => $u['first_name'],
+            'last_name' => $u['last_name'],
+            'usc_id' => $u['usc_id'],
+            'barangay' => $u['barangay'],
+            'city' => $u['city'],
+            'province' => $u['province'],
+            'contact_number' => $u['contact_number'],
+            'email' => $u['email']
+        ];
+    }
+} else {
+    // Load all users by default on page load
+    $allUsers = $user->search('city', '%');
+    foreach ($allUsers as $u) {
         $results[] = [
             'type' => 'user',
             'user_id' => $u['id'],
@@ -68,35 +86,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($searchValue)) {
             <p class="section-subtitle">Use the tabs below to search by different criteria.</p>
 
             <div class="search-tabs-container">
-                <div class="search-tabs">
-                    <button class="search-tab active" data-type="city">
-                        <span class="tab-icon">📍</span>
-                        City
-                    </button>
-                    <button class="search-tab" data-type="barangay">
-                        <span class="tab-icon">📍</span>
-                        Barangay
-                    </button>
-                    <button class="search-tab" data-type="province">
-                        <span class="tab-icon">📍</span>
-                        Province
-                    </button>
-                    <button class="search-tab" data-type="usc_id">
-                        <span class="tab-icon">#</span>
-                        ID Number
-                    </button>
-                    <button class="search-tab" data-type="name">
-                        <span class="tab-icon">👤</span>
-                        Name
-                    </button>
-                    <button class="search-tab" data-type="date">
-                        <span class="tab-icon">📅</span>
-                        Date/Time
-                    </button>
-                </div>
-
                 <form method="POST" class="search-form" id="searchForm">
-                    <input type="hidden" name="searchType" id="searchType" value="city">
+                    <div class="toggle-tabs">
+                        <input type="radio" id="tab-city" name="searchType" value="city" checked>
+                        <input type="radio" id="tab-barangay" name="searchType" value="barangay">
+                        <input type="radio" id="tab-province" name="searchType" value="province">
+                        <input type="radio" id="tab-usc_id" name="searchType" value="usc_id">
+                        <input type="radio" id="tab-name" name="searchType" value="name">
+
+                        <label for="tab-city" class="toggle-label city-label">
+                            <span class="tab-icon">📍</span>
+                            City
+                        </label>
+                        <label for="tab-barangay" class="toggle-label barangay-label">
+                            <span class="tab-icon">📍</span>
+                            Barangay
+                        </label>
+                        <label for="tab-province" class="toggle-label province-label">
+                            <span class="tab-icon">📍</span>
+                            Province
+                        </label>
+                        <label for="tab-usc_id" class="toggle-label id-label">
+                            <span class="tab-icon">#</span>
+                            ID Number
+                        </label>
+                        <label for="tab-name" class="toggle-label name-label">
+                            <span class="tab-icon">👤</span>
+                            Name
+                        </label>
+
+                        <div class="toggle-slider"></div>
+                    </div>
 
                     <div class="search-input-group">
                         <input
@@ -116,13 +136,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($searchValue)) {
             </div>
         </div>
 
-        <?php if ($results): ?>
-            <div class="results-section">
-                <div class="results-header">
-                    <h3>Search Results</h3>
-                    <p class="results-count"><?php echo count($results); ?> result<?php echo count($results) !== 1 ? 's' : ''; ?> found</p>
-                </div>
+        <div class="results-section">
+            <div class="results-header">
+                <h3>Visitor Records</h3>
+                <p class="results-count"><?php echo count($results); ?> record<?php echo count($results) !== 1 ? 's' : ''; ?> found</p>
+            </div>
 
+            <?php if (empty($results)): ?>
+                <div class="alert alert-info">No visitor records found.</div>
+            <?php else: ?>
                 <div class="results-table-container">
                     <table class="results-table">
                         <thead>
@@ -151,13 +173,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($searchValue)) {
                         </tbody>
                     </table>
                 </div>
-            </div>
-        <?php endif; ?>
+            <?php endif; ?>
+        </div>
     </div>
 
     <script>
-        const searchTabs = document.querySelectorAll('.search-tab');
-        const searchTypeInput = document.getElementById('searchType');
+        const toggleTabs = document.querySelectorAll('input[name="searchType"]');
         const searchInput = document.getElementById('searchInput');
         const searchForm = document.getElementById('searchForm');
 
@@ -166,26 +187,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($searchValue)) {
             barangay: 'Search by barangay...',
             province: 'Search by province...',
             usc_id: 'Search by ID number...',
-            name: 'Search by name...',
-            date: 'Search by date...'
+            name: 'Search by name...'
         };
 
-        searchTabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                searchTabs.forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-
-                const type = tab.dataset.type;
-                searchTypeInput.value = type;
-
-                if (type === 'date') {
-                    searchInput.type = 'date';
-                    searchInput.placeholder = '';
-                } else {
-                    searchInput.type = 'text';
-                    searchInput.placeholder = placeholders[type];
-                }
-
+        toggleTabs.forEach(tab => {
+            tab.addEventListener('change', () => {
+                const type = tab.value;
+                searchInput.placeholder = placeholders[type];
                 searchInput.focus();
                 searchInput.value = '';
             });
@@ -193,4 +201,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($searchValue)) {
     </script>
 </body>
 </html>
+
 
