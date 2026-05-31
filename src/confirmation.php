@@ -24,6 +24,7 @@ if ($user_id) {
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+    <?php if ($action !== 'signout'): ?>
     <nav class="navbar">
         <div class="container">
             <h1>DCE Contact Tracing System</h1>
@@ -33,6 +34,7 @@ if ($user_id) {
             </ul>
         </div>
     </nav>
+    <?php endif; ?>
 
     <div class="container">
         <div class="confirmation-container">
