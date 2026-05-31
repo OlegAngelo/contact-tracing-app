@@ -208,53 +208,20 @@ require_once __DIR__ . '/../includes/icons.php';
                 <h2 class="admin-login-title">Admin Login</h2>
                 <p class="admin-login-subtitle">Enter your credentials to access the admin portal.</p>
 
-                <?php
-                $login_message = '';
-                $login_error = false;
+                <div id="admin-alert" class="admin-alert" style="display: none;"></div>
 
-                if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['admin_login'])) {
-                    require_once __DIR__ . '/../config/db_config.php';
-                    require_once __DIR__ . '/../includes/Admin.php';
-
-                    $admin = new Admin($conn);
-                    $username = trim($_POST['username']);
-                    $password = trim($_POST['password']);
-
-                    if (empty($username) || empty($password)) {
-                        $login_message = "Please enter username and password.";
-                        $login_error = true;
-                    } else {
-                        if ($admin->verify($username, $password)) {
-                            $_SESSION['admin_logged_in'] = true;
-                            $_SESSION['admin_username'] = $username;
-                            header("Location: admin/dashboard.php");
-                            exit;
-                        } else {
-                            $login_message = "Invalid username or password.";
-                            $login_error = true;
-                        }
-                    }
-                }
-                ?>
-
-                <?php if ($login_message): ?>
-                    <div class="admin-alert <?php echo $login_error ? 'alert-error' : 'alert-success'; ?>">
-                        <?php echo $login_message; ?>
-                    </div>
-                <?php endif; ?>
-
-                <form method="POST" class="admin-login-form">
+                <form id="admin-login-form" class="admin-login-form">
                     <div class="form-group">
-                        <label for="username">Username</label>
-                        <input type="text" id="username" name="username" placeholder="Enter username" required autocomplete="off">
+                        <label for="admin-username">Username</label>
+                        <input type="text" id="admin-username" name="username" placeholder="Enter username" required autocomplete="off">
                     </div>
 
                     <div class="form-group">
-                        <label for="password">Password</label>
-                        <input type="password" id="password" name="password" placeholder="Enter password" required>
+                        <label for="admin-password">Password</label>
+                        <input type="password" id="admin-password" name="password" placeholder="Enter password" required>
                     </div>
 
-                    <button type="submit" name="admin_login" class="btn-login">Login</button>
+                    <button type="submit" class="btn-login">Login</button>
                 </form>
 
                 <div class="demo-credentials">
@@ -278,6 +245,7 @@ require_once __DIR__ . '/../includes/icons.php';
         const signinForm = document.getElementById('signin-form');
         const registerForm = document.getElementById('register-form');
         const signoutForm = document.getElementById('signout-form');
+        const adminLoginForm = document.getElementById('admin-login-form');
         const actionCardsContainer = document.getElementById('action-cards-container');
         const signinFormContainer = document.getElementById('signin-form-container');
         const registerFormContainer = document.getElementById('register-form-container');
@@ -526,6 +494,50 @@ require_once __DIR__ . '/../includes/icons.php';
 
         userToggle.addEventListener('change', () => updatePortal('user'));
         adminToggle.addEventListener('change', () => updatePortal('admin'));
+
+        adminLoginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('admin-username').value.trim();
+            const password = document.getElementById('admin-password').value.trim();
+
+            if (!username || !password) {
+                const alertDiv = document.getElementById('admin-alert');
+                alertDiv.textContent = 'Please enter username and password.';
+                alertDiv.className = 'admin-alert alert-error';
+                alertDiv.style.display = 'block';
+                return;
+            }
+
+            try {
+                const response = await fetch('admin/api/login.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: 'username=' + encodeURIComponent(username) + '&password=' + encodeURIComponent(password)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showToast('Login successful!');
+                    setTimeout(() => {
+                        window.location.href = 'admin/dashboard.php';
+                    }, 1000);
+                } else {
+                    const alertDiv = document.getElementById('admin-alert');
+                    alertDiv.textContent = data.message || 'Invalid username or password.';
+                    alertDiv.className = 'admin-alert alert-error';
+                    alertDiv.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                const alertDiv = document.getElementById('admin-alert');
+                alertDiv.textContent = 'An error occurred. Please try again.';
+                alertDiv.className = 'admin-alert alert-error';
+                alertDiv.style.display = 'block';
+            }
+        });
     </script>
 </body>
 </html>

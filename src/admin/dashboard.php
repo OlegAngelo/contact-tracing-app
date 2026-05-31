@@ -3,6 +3,7 @@ session_start();
 require_once __DIR__ . '/../../config/db_config.php';
 require_once __DIR__ . '/../../includes/User.php';
 require_once __DIR__ . '/../../includes/SignLog.php';
+require_once __DIR__ . '/../../includes/icons.php';
 
 if (!isset($_SESSION['admin_logged_in'])) {
     header("Location: index.php");
@@ -11,30 +12,25 @@ if (!isset($_SESSION['admin_logged_in'])) {
 
 $user = new User($conn);
 $signLog = new SignLog($conn);
-$searchType = isset($_GET['searchType']) ? $_GET['searchType'] : '';
-$searchValue = isset($_GET['searchValue']) ? $_GET['searchValue'] : '';
-$searchDate = isset($_GET['searchDate']) ? $_GET['searchDate'] : '';
+$searchType = isset($_POST['searchType']) ? $_POST['searchType'] : '';
+$searchValue = isset($_POST['searchValue']) ? $_POST['searchValue'] : '';
 $results = [];
 
-if ($_SERVER['REQUEST_METHOD'] === 'GET' && ($searchType || $searchDate)) {
-    if ($searchDate) {
-        $results = $signLog->getLogsByDate($searchDate);
-    } elseif ($searchType) {
-        $users = $user->search($searchType, $searchValue);
-        foreach ($users as $u) {
-            $results[] = [
-                'type' => 'user',
-                'user_id' => $u['id'],
-                'first_name' => $u['first_name'],
-                'last_name' => $u['last_name'],
-                'usc_id' => $u['usc_id'],
-                'barangay' => $u['barangay'],
-                'city' => $u['city'],
-                'province' => $u['province'],
-                'contact_number' => $u['contact_number'],
-                'email' => $u['email']
-            ];
-        }
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($searchValue)) {
+    $users = $user->search($searchType, $searchValue);
+    foreach ($users as $u) {
+        $results[] = [
+            'type' => 'user',
+            'user_id' => $u['id'],
+            'first_name' => $u['first_name'],
+            'last_name' => $u['last_name'],
+            'usc_id' => $u['usc_id'],
+            'barangay' => $u['barangay'],
+            'city' => $u['city'],
+            'province' => $u['province'],
+            'contact_number' => $u['contact_number'],
+            'email' => $u['email']
+        ];
     }
 }
 ?>
@@ -47,165 +43,154 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && ($searchType || $searchDate)) {
     <title>Admin Dashboard - Contact Tracing System</title>
     <link rel="stylesheet" href="../css/style.css">
 </head>
-<body>
-    <nav class="navbar">
-        <div class="container">
-            <h1>DCE Contact Tracing System - Admin Dashboard</h1>
-            <ul>
-                <li><a href="#">Welcome, <?php echo htmlspecialchars($_SESSION['admin_username']); ?></a></li>
-                <li><a href="logout.php">Logout</a></li>
-            </ul>
+<body class="admin-dashboard-page">
+    <div class="admin-header">
+        <div class="admin-header-container">
+            <h1 class="admin-title">Contact Tracing System</h1>
+            <p class="admin-subtitle">Department of Computer Engineering</p>
         </div>
-    </nav>
+    </div>
 
-    <div class="container">
-        <div class="search-container">
-            <h2>Search Users & Logs</h2>
+    <div class="admin-container">
+        <div class="admin-dashboard-header">
+            <div>
+                <h2 class="dashboard-title">Admin Dashboard</h2>
+                <p class="dashboard-subtitle">Search and manage visitor records</p>
+            </div>
+            <a href="logout.php" class="btn-logout">
+                <span class="logout-icon">↗</span>
+                Logout
+            </a>
+        </div>
 
-            <div class="search-tabs">
-                <h3>Search Options:</h3>
+        <div class="search-section">
+            <h3 class="section-title">Search Visitors</h3>
+            <p class="section-subtitle">Use the tabs below to search by different criteria.</p>
 
-                <!-- Search by Name -->
-                <div class="search-card">
-                    <h4>Search by Name</h4>
-                    <form method="GET">
-                        <div class="form-group">
-                            <input type="hidden" name="searchType" value="name">
-                            <input type="text" name="searchValue" placeholder="Enter first or last name" required>
-                            <button type="submit" class="btn btn-primary">Search</button>
-                        </div>
-                    </form>
+            <div class="search-tabs-container">
+                <div class="search-tabs">
+                    <button class="search-tab active" data-type="city">
+                        <span class="tab-icon">📍</span>
+                        City
+                    </button>
+                    <button class="search-tab" data-type="barangay">
+                        <span class="tab-icon">📍</span>
+                        Barangay
+                    </button>
+                    <button class="search-tab" data-type="province">
+                        <span class="tab-icon">📍</span>
+                        Province
+                    </button>
+                    <button class="search-tab" data-type="usc_id">
+                        <span class="tab-icon">#</span>
+                        ID Number
+                    </button>
+                    <button class="search-tab" data-type="name">
+                        <span class="tab-icon">👤</span>
+                        Name
+                    </button>
+                    <button class="search-tab" data-type="date">
+                        <span class="tab-icon">📅</span>
+                        Date/Time
+                    </button>
                 </div>
 
-                <!-- Search by Location -->
-                <div class="search-card">
-                    <h4>Search by City</h4>
-                    <form method="GET">
-                        <div class="form-group">
-                            <input type="hidden" name="searchType" value="city">
-                            <input type="text" name="searchValue" placeholder="Enter city" required>
-                            <button type="submit" class="btn btn-primary">Search</button>
-                        </div>
-                    </form>
-                </div>
+                <form method="POST" class="search-form" id="searchForm">
+                    <input type="hidden" name="searchType" id="searchType" value="city">
 
-                <div class="search-card">
-                    <h4>Search by Barangay</h4>
-                    <form method="GET">
-                        <div class="form-group">
-                            <input type="hidden" name="searchType" value="barangay">
-                            <input type="text" name="searchValue" placeholder="Enter barangay" required>
-                            <button type="submit" class="btn btn-primary">Search</button>
-                        </div>
-                    </form>
-                </div>
-
-                <div class="search-card">
-                    <h4>Search by Province</h4>
-                    <form method="GET">
-                        <div class="form-group">
-                            <input type="hidden" name="searchType" value="province">
-                            <input type="text" name="searchValue" placeholder="Enter province" required>
-                            <button type="submit" class="btn btn-primary">Search</button>
-                        </div>
-                    </form>
-                </div>
-
-                <!-- Search by ID -->
-                <div class="search-card">
-                    <h4>Search by USC ID</h4>
-                    <form method="GET">
-                        <div class="form-group">
-                            <input type="hidden" name="searchType" value="usc_id">
-                            <input type="text" name="searchValue" placeholder="Enter USC ID" required>
-                            <button type="submit" class="btn btn-primary">Search</button>
-                        </div>
-                    </form>
-                </div>
-
-                <!-- Search by Date -->
-                <div class="search-card">
-                    <h4>Search by Date (Entry/Exit)</h4>
-                    <form method="GET">
-                        <div class="form-group">
-                            <input type="date" name="searchDate" required>
-                            <button type="submit" class="btn btn-primary">Search</button>
-                        </div>
-                    </form>
-                </div>
+                    <div class="search-input-group">
+                        <input
+                            type="text"
+                            id="searchInput"
+                            name="searchValue"
+                            class="search-input"
+                            placeholder="Search by city..."
+                            autocomplete="off"
+                        >
+                        <button type="submit" class="btn-search">
+                            <span class="search-icon">🔍</span>
+                            Search
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
 
-        <!-- Search Results -->
-        <?php if ($searchType || $searchDate): ?>
-            <div class="results-container">
-                <h3>Search Results</h3>
+        <?php if ($results): ?>
+            <div class="results-section">
+                <div class="results-header">
+                    <h3>Search Results</h3>
+                    <p class="results-count"><?php echo count($results); ?> result<?php echo count($results) !== 1 ? 's' : ''; ?> found</p>
+                </div>
 
-                <?php if (empty($results)): ?>
-                    <div class="alert alert-info">No results found.</div>
-                <?php else: ?>
-                    <?php if ($searchDate): ?>
-                        <!-- Display logs -->
-                        <table class="data-table">
-                            <thead>
+                <div class="results-table-container">
+                    <table class="results-table">
+                        <thead>
+                            <tr>
+                                <th>ID Number</th>
+                                <th>Name</th>
+                                <th>Barangay</th>
+                                <th>City</th>
+                                <th>Province</th>
+                                <th>Contact</th>
+                                <th>Email</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($results as $u): ?>
                                 <tr>
-                                    <th>Name</th>
-                                    <th>USC ID</th>
-                                    <th>Action</th>
-                                    <th>Date & Time</th>
+                                    <td><?php echo htmlspecialchars($u['usc_id']); ?></td>
+                                    <td><?php echo htmlspecialchars($u['first_name'] . ' ' . $u['last_name']); ?></td>
+                                    <td><?php echo htmlspecialchars($u['barangay']); ?></td>
+                                    <td><?php echo htmlspecialchars($u['city']); ?></td>
+                                    <td><?php echo htmlspecialchars($u['province']); ?></td>
+                                    <td><?php echo htmlspecialchars($u['contact_number']); ?></td>
+                                    <td><?php echo htmlspecialchars($u['email']); ?></td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($results as $log): ?>
-                                    <tr>
-                                        <td><?php echo htmlspecialchars($log['first_name'] . ' ' . $log['last_name']); ?></td>
-                                        <td><?php echo htmlspecialchars($log['usc_id']); ?></td>
-                                        <td>
-                                            <span class="badge <?php echo $log['action'] === 'IN' ? 'badge-success' : 'badge-danger'; ?>">
-                                                <?php echo $log['action']; ?>
-                                            </span>
-                                        </td>
-                                        <td><?php echo htmlspecialchars($log['timestamp']); ?></td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    <?php else: ?>
-                        <!-- Display users -->
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>USC ID</th>
-                                    <th>Barangay</th>
-                                    <th>City</th>
-                                    <th>Province</th>
-                                    <th>Contact</th>
-                                    <th>Email</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($results as $u): ?>
-                                    <tr>
-                                        <td><?php echo htmlspecialchars($u['first_name'] . ' ' . $u['last_name']); ?></td>
-                                        <td><?php echo htmlspecialchars($u['usc_id']); ?></td>
-                                        <td><?php echo htmlspecialchars($u['barangay']); ?></td>
-                                        <td><?php echo htmlspecialchars($u['city']); ?></td>
-                                        <td><?php echo htmlspecialchars($u['province']); ?></td>
-                                        <td><?php echo htmlspecialchars($u['contact_number']); ?></td>
-                                        <td><?php echo htmlspecialchars($u['email']); ?></td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    <?php endif; ?>
-                <?php endif; ?>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         <?php endif; ?>
     </div>
 
-    <footer>
-        <p>&copy; 2024 Contact Tracing System. All rights reserved.</p>
-    </footer>
+    <script>
+        const searchTabs = document.querySelectorAll('.search-tab');
+        const searchTypeInput = document.getElementById('searchType');
+        const searchInput = document.getElementById('searchInput');
+        const searchForm = document.getElementById('searchForm');
+
+        const placeholders = {
+            city: 'Search by city...',
+            barangay: 'Search by barangay...',
+            province: 'Search by province...',
+            usc_id: 'Search by ID number...',
+            name: 'Search by name...',
+            date: 'Search by date...'
+        };
+
+        searchTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                searchTabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                const type = tab.dataset.type;
+                searchTypeInput.value = type;
+
+                if (type === 'date') {
+                    searchInput.type = 'date';
+                    searchInput.placeholder = '';
+                } else {
+                    searchInput.type = 'text';
+                    searchInput.placeholder = placeholders[type];
+                }
+
+                searchInput.focus();
+                searchInput.value = '';
+            });
+        });
+    </script>
 </body>
 </html>
+
