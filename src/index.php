@@ -50,7 +50,7 @@ require_once __DIR__ . '/../includes/icons.php';
                     <p>First time visitor? Register your information here.</p>
                 </a>
 
-                <a href="signout.php" class="action-card">
+                <a href="#" class="action-card" id="signout-btn">
                     <div class="card-icon signout-icon"><?php echo Icons::signOut(); ?></div>
                     <h3>Sign Out</h3>
                     <p>You must be signed in to sign out.</p>
@@ -133,6 +133,26 @@ require_once __DIR__ . '/../includes/icons.php';
                         <div class="form-actions">
                             <button type="submit" class="btn-register">Register & Sign In</button>
                             <button type="button" class="btn-cancel" id="cancel-register">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Sign Out Form -->
+            <div class="signout-form-container" id="signout-form-container">
+                <div class="signout-form-box">
+                    <h2>Sign Out</h2>
+                    <p class="signout-subtitle">Enter your ID number to confirm you want to sign out.</p>
+
+                    <form id="signout-form">
+                        <div class="form-group">
+                            <label for="signout-id-number">ID Number</label>
+                            <input type="text" id="signout-id-number" name="usc_id" placeholder="241105130" required autocomplete="off">
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn-signout">Sign Out</button>
+                            <button type="button" class="btn-cancel" id="cancel-signout">Cancel</button>
                         </div>
                     </form>
                 </div>
@@ -246,13 +266,17 @@ require_once __DIR__ . '/../includes/icons.php';
         const adminToggle = document.getElementById('admin-toggle');
         const signinBtn = document.getElementById('signin-btn');
         const registerBtn = document.getElementById('register-btn');
+        const signoutBtn = document.getElementById('signout-btn');
         const cancelSigninBtn = document.getElementById('cancel-signin');
         const cancelRegisterBtn = document.getElementById('cancel-register');
+        const cancelSignoutBtn = document.getElementById('cancel-signout');
         const signinForm = document.getElementById('signin-form');
         const registerForm = document.getElementById('register-form');
+        const signoutForm = document.getElementById('signout-form');
         const actionCardsContainer = document.getElementById('action-cards-container');
         const signinFormContainer = document.getElementById('signin-form-container');
         const registerFormContainer = document.getElementById('register-form-container');
+        const signoutFormContainer = document.getElementById('signout-form-container');
         const modal = document.getElementById('confirmation-modal');
         const modalOverlay = document.getElementById('modal-overlay');
         const modalCloseBtn = document.getElementById('modal-close');
@@ -272,12 +296,14 @@ require_once __DIR__ . '/../includes/icons.php';
             actionCardsContainer.style.display = 'grid';
             signinFormContainer.style.display = 'none';
             registerFormContainer.style.display = 'none';
+            signoutFormContainer.style.display = 'none';
         }
 
         function showSignInForm() {
             actionCardsContainer.style.display = 'none';
             signinFormContainer.style.display = 'block';
             registerFormContainer.style.display = 'none';
+            signoutFormContainer.style.display = 'none';
             idInput.focus();
         }
 
@@ -285,7 +311,16 @@ require_once __DIR__ . '/../includes/icons.php';
             actionCardsContainer.style.display = 'none';
             signinFormContainer.style.display = 'none';
             registerFormContainer.style.display = 'block';
+            signoutFormContainer.style.display = 'none';
             document.getElementById('reg-id-number').focus();
+        }
+
+        function showSignOutForm() {
+            actionCardsContainer.style.display = 'none';
+            signinFormContainer.style.display = 'none';
+            registerFormContainer.style.display = 'none';
+            signoutFormContainer.style.display = 'block';
+            document.getElementById('signout-id-number').focus();
         }
 
         function closeModal() {
@@ -303,8 +338,14 @@ require_once __DIR__ . '/../includes/icons.php';
             showRegisterForm();
         });
 
+        signoutBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            showSignOutForm();
+        });
+
         cancelSigninBtn.addEventListener('click', showActionCards);
         cancelRegisterBtn.addEventListener('click', showActionCards);
+        cancelSignoutBtn.addEventListener('click', showActionCards);
         modalCloseBtn.addEventListener('click', closeModal);
         modalCancelBtn.addEventListener('click', closeModal);
         modalOverlay.addEventListener('click', closeModal);
@@ -374,6 +415,37 @@ require_once __DIR__ . '/../includes/icons.php';
                     window.location.href = 'confirmation.php';
                 } else {
                     alert(result.message || 'Registration failed');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            }
+        });
+
+        signoutForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const uscId = document.getElementById('signout-id-number').value.trim();
+
+            if (!uscId) {
+                alert('Please enter your ID number');
+                return;
+            }
+
+            try {
+                const response = await fetch('api/signout.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: 'usc_id=' + encodeURIComponent(uscId)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    window.location.href = 'confirmation.php?action=signout&user_id=' + data.user_id;
+                } else {
+                    alert(data.message || 'Sign out failed');
                 }
             } catch (error) {
                 console.error('Error:', error);

@@ -853,6 +853,32 @@ footer {
     transform: translateY(0);
 }
 
+.btn-signout {
+    flex: 1;
+    padding: 12px 20px;
+    background-color: #ed8936;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-signout:hover {
+    background-color: #dd6b20;
+    transform: translateY(-2px);
+}
+
+.btn-signout:active {
+    transform: translateY(0);
+}
+
 .btn-cancel {
     flex: 1;
     padding: 12px 20px;
@@ -944,6 +970,68 @@ footer {
     border-color: #4361ee;
     background-color: white;
     box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+}
+
+/* Sign Out Form */
+.signout-form-container {
+    display: none;
+    animation: fadeIn 0.3s ease;
+}
+
+.signout-form-box {
+    background: white;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.signout-form-box h2 {
+    font-size: 24px;
+    color: #1a202c;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.signout-subtitle {
+    font-size: 14px;
+    color: #718096;
+    margin-bottom: 24px;
+}
+
+.signout-form-box .form-group {
+    margin-bottom: 24px;
+}
+
+.signout-form-box label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1a202c;
+    margin-bottom: 8px;
+}
+
+.signout-form-box input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 14px;
+    background-color: #f7fafc;
+    color: #1a202c;
+    transition: all 0.3s ease;
+}
+
+.signout-form-box input::placeholder {
+    color: #a0aec0;
+}
+
+.signout-form-box input:focus {
+    outline: none;
+    border-color: #ed8936;
+    background-color: white;
+    box-shadow: 0 0 0 3px rgba(237, 137, 54, 0.1);
 }
 
 /* Modal */
@@ -1222,5 +1310,14 @@ footer {
 
     .form-row {
         grid-template-columns: 1fr;
+    }
+
+    .signout-form-box {
+        padding: 30px 20px;
+        max-width: 100%;
+    }
+
+    .signout-form-box h2 {
+        font-size: 20px;
     }
 }
