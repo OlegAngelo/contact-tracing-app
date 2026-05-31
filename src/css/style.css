@@ -1204,6 +1204,31 @@ footer {
     transform: translateY(0);
 }
 
+/* Toast Notification */
+.toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background-color: #48bb78;
+    color: white;
+    padding: 16px 24px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.3s ease;
+    pointer-events: none;
+    max-width: 400px;
+    word-wrap: break-word;
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .home-title {
@@ -1319,5 +1344,14 @@ footer {
 
     .signout-form-box h2 {
         font-size: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .toast {
+        bottom: 16px;
+        right: 16px;
+        left: 16px;
+        max-width: none;
     }
 }

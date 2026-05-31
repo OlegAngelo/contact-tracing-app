@@ -11,6 +11,11 @@ require_once __DIR__ . '/../includes/icons.php';
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body class="home-page">
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <span id="toast-message"></span>
+    </div>
+
     <div class="home-container">
         <!-- Header -->
         <div class="home-header">
@@ -283,6 +288,27 @@ require_once __DIR__ . '/../includes/icons.php';
         const modalCancelBtn = document.getElementById('modal-cancel');
         const modalConfirmBtn = document.getElementById('modal-confirm');
         const idInput = document.getElementById('id-number');
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toast-message');
+
+        function showToast(message, duration = 2000) {
+            toastMessage.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, duration);
+        }
+
+        function checkForMessage() {
+            const params = new URLSearchParams(window.location.search);
+            const message = params.get('message');
+            if (message) {
+                showToast(decodeURIComponent(message));
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        }
+
+        checkForMessage();
 
         function updatePortal(portal) {
             document.querySelectorAll('.portal-content').forEach(c => c.classList.remove('active'));
@@ -412,7 +438,7 @@ require_once __DIR__ . '/../includes/icons.php';
                 const result = await response.json();
 
                 if (result.success) {
-                    window.location.href = 'confirmation.php';
+                    window.location.href = 'index.php?message=' + encodeURIComponent('Successfully registered and signed in!');
                 } else {
                     alert(result.message || 'Registration failed');
                 }
@@ -487,7 +513,7 @@ require_once __DIR__ . '/../includes/icons.php';
                     if (modalType === 'signout') {
                         window.location.href = 'confirmation.php?action=signout&user_id=' + userId;
                     } else {
-                        window.location.href = 'confirmation.php';
+                        window.location.href = 'index.php?message=' + encodeURIComponent('Successfully signed in!');
                     }
                 } else {
                     alert(data.message || (modalType === 'signout' ? 'Sign out failed' : 'Sign in failed'));
