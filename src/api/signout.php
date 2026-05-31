@@ -7,16 +7,16 @@ require_once __DIR__ . '/../../includes/User.php';
 require_once __DIR__ . '/../../includes/SignLog.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $usc_id = trim($_POST['usc_id'] ?? '');
+    $user_id = intval($_POST['user_id'] ?? 0);
 
-    if (empty($usc_id)) {
+    if (!$user_id) {
         http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'ID number is required']);
+        echo json_encode(['success' => false, 'message' => 'User ID is required']);
         exit;
     }
 
     $user = new User($conn);
-    $userData = $user->findByUscId($usc_id);
+    $userData = $user->getById($user_id);
 
     if (!$userData) {
         http_response_code(404);
@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     $signLog = new SignLog($conn);
-    $logs = $signLog->getUserLogs($userData['id']);
+    $logs = $signLog->getUserLogs($user_id);
     $isSignedIn = !empty($logs) && $logs[0]['action'] === 'IN';
 
     if (!$isSignedIn) {
@@ -34,8 +34,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    $signLog->signOut($userData['id']);
-    echo json_encode(['success' => true, 'user_id' => $userData['id']]);
+    $signLog->signOut($user_id);
+    echo json_encode(['success' => true, 'message' => 'Signed out successfully']);
 } else {
     http_response_code(405);
     echo json_encode(['success' => false, 'message' => 'Method not allowed']);

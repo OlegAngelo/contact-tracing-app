@@ -856,7 +856,7 @@ footer {
 .btn-signout {
     flex: 1;
     padding: 12px 20px;
-    background-color: #ed8936;
+    background-color: #1a202c;
     color: white;
     border: none;
     border-radius: 6px;
@@ -871,7 +871,7 @@ footer {
 }
 
 .btn-signout:hover {
-    background-color: #dd6b20;
+    background-color: #1a202c;
     transform: translateY(-2px);
 }
 
@@ -1029,7 +1029,7 @@ footer {
 
 .signout-form-box input:focus {
     outline: none;
-    border-color: #ed8936;
+    border-color: #4361ee;
     background-color: white;
     box-shadow: 0 0 0 3px rgba(237, 137, 54, 0.1);
 }

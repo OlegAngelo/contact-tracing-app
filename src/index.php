@@ -163,8 +163,8 @@ require_once __DIR__ . '/../includes/icons.php';
         <div class="modal" id="confirmation-modal">
             <div class="modal-content">
                 <button type="button" class="modal-close" id="modal-close">&times;</button>
-                <h2>Confirm Your Information</h2>
-                <p class="modal-subtitle">Please verify that your information is correct before signing in.</p>
+                <h2 id="modal-title">Confirm Your Information</h2>
+                <p class="modal-subtitle" id="modal-subtitle">Please verify that your information is correct before signing in.</p>
 
                 <div class="confirmation-info">
                     <div class="info-row">
@@ -432,7 +432,7 @@ require_once __DIR__ . '/../includes/icons.php';
             }
 
             try {
-                const response = await fetch('api/signout.php', {
+                const response = await fetch('api/fetch-user.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded'
@@ -443,9 +443,23 @@ require_once __DIR__ . '/../includes/icons.php';
                 const data = await response.json();
 
                 if (data.success) {
-                    window.location.href = 'confirmation.php?action=signout&user_id=' + data.user_id;
+                    const user = data.user;
+                    document.getElementById('modal-id').textContent = user.usc_id;
+                    document.getElementById('modal-name').textContent = user.first_name + ' ' + user.last_name;
+                    document.getElementById('modal-address').textContent = (user.barangay ? user.barangay + ', ' : '') + user.city + ', ' + user.province;
+                    document.getElementById('modal-contact').textContent = user.contact_number;
+                    document.getElementById('modal-email').textContent = user.email;
+                    modal.dataset.userId = user.id;
+                    modal.dataset.modalType = 'signout';
+
+                    document.getElementById('modal-title').textContent = 'Confirm Sign Out';
+                    document.getElementById('modal-subtitle').textContent = 'Please verify your information before signing out.';
+                    document.getElementById('modal-confirm').textContent = 'Confirm & Sign Out';
+
+                    modal.classList.add('active');
+                    modalOverlay.classList.add('active');
                 } else {
-                    alert(data.message || 'Sign out failed');
+                    alert(data.message || 'User not found');
                 }
             } catch (error) {
                 console.error('Error:', error);
@@ -455,8 +469,11 @@ require_once __DIR__ . '/../includes/icons.php';
 
         modalConfirmBtn.addEventListener('click', async () => {
             const userId = modal.dataset.userId;
+            const modalType = modal.dataset.modalType || 'signin';
+
             try {
-                const response = await fetch('api/signin.php', {
+                const endpoint = modalType === 'signout' ? 'api/signout.php' : 'api/signin.php';
+                const response = await fetch(endpoint, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded'
@@ -467,9 +484,13 @@ require_once __DIR__ . '/../includes/icons.php';
                 const data = await response.json();
 
                 if (data.success) {
-                    window.location.href = 'confirmation.php';
+                    if (modalType === 'signout') {
+                        window.location.href = 'confirmation.php?action=signout&user_id=' + userId;
+                    } else {
+                        window.location.href = 'confirmation.php';
+                    }
                 } else {
-                    alert(data.message || 'Sign in failed');
+                    alert(data.message || (modalType === 'signout' ? 'Sign out failed' : 'Sign in failed'));
                 }
             } catch (error) {
                 console.error('Error:', error);
