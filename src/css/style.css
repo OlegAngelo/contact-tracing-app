@@ -1362,16 +1362,25 @@ footer {
     min-height: 100vh;
 }
 
-.admin-header {
-    background: white;
-    padding: 30px 20px;
-    text-align: center;
-    border-bottom: 1px solid #e2e8f0;
-}
-
-.admin-header-container {
+.admin-container {
     max-width: 1200px;
     margin: 0 auto;
+    padding: 40px 20px;
+}
+
+.admin-header-section {
+    background: white;
+    padding: 32px;
+    border-radius: 12px;
+    margin-bottom: 40px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.admin-header-content {
+    text-align: left;
 }
 
 .admin-title {
@@ -1387,16 +1396,7 @@ footer {
     font-weight: 400;
 }
 
-.admin-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 40px 20px;
-}
-
 .admin-dashboard-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
     margin-bottom: 40px;
 }
 
@@ -1431,10 +1431,13 @@ footer {
 .btn-logout:hover {
     background-color: #f7fafc;
     border-color: #cbd5e0;
+    color: #4361ee;
 }
 
-.logout-icon {
-    font-size: 16px;
+.btn-logout svg {
+    width: 20px;
+    height: 20px;
+    stroke-width: 2;
 }
 
 .search-section {
@@ -1563,6 +1566,12 @@ footer {
 
 .toggle-label .tab-icon {
     font-size: 14px;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    stroke-width: 2;
 }
 
 #tab-city:checked ~ .city-label,
@@ -1649,8 +1658,10 @@ footer {
     transform: translateY(0);
 }
 
-.search-icon {
-    font-size: 16px;
+.btn-search svg {
+    width: 18px;
+    height: 18px;
+    stroke-width: 2;
 }
 
 .results-section {
@@ -1722,9 +1733,18 @@ footer {
         font-size: 32px;
     }
 
-    .admin-dashboard-header {
+    .admin-header-section {
         flex-direction: column;
         gap: 16px;
+        align-items: flex-start;
+    }
+
+    .admin-header-content {
+        width: 100%;
+    }
+
+    .btn-logout {
+        align-self: flex-end;
     }
 
     .search-section {

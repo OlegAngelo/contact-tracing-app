@@ -3,7 +3,6 @@ session_start();
 require_once __DIR__ . '/../../config/db_config.php';
 require_once __DIR__ . '/../../includes/User.php';
 require_once __DIR__ . '/../../includes/SignLog.php';
-require_once __DIR__ . '/../../includes/icons.php';
 
 if (!isset($_SESSION['admin_logged_in'])) {
     header("Location: index.php");
@@ -62,23 +61,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($searchValue)) {
     <link rel="stylesheet" href="../css/style.css">
 </head>
 <body class="admin-dashboard-page">
-    <div class="admin-header">
-        <div class="admin-header-container">
-            <h1 class="admin-title">Contact Tracing System</h1>
-            <p class="admin-subtitle">Department of Computer Engineering</p>
-        </div>
-    </div>
-
     <div class="admin-container">
+        <div class="admin-header-section">
+            <div class="admin-header-content">
+                <h1 class="admin-title">Contact Tracing System</h1>
+                <p class="admin-subtitle">Department of Computer Engineering</p>
+            </div>
+            <a href="logout.php" class="btn-logout">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" x2="9" y1="12" y2="12"></line></svg>
+                Logout
+            </a>
+        </div>
+
         <div class="admin-dashboard-header">
             <div>
                 <h2 class="dashboard-title">Admin Dashboard</h2>
                 <p class="dashboard-subtitle">Search and manage visitor records</p>
             </div>
-            <a href="logout.php" class="btn-logout">
-                <span class="logout-icon">↗</span>
-                Logout
-            </a>
         </div>
 
         <div class="search-section">
@@ -95,23 +94,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($searchValue)) {
                         <input type="radio" id="tab-name" name="searchType" value="name">
 
                         <label for="tab-city" class="toggle-label city-label">
-                            <span class="tab-icon">📍</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="tab-icon"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path><circle cx="12" cy="10" r="3"></circle></svg>
                             City
                         </label>
                         <label for="tab-barangay" class="toggle-label barangay-label">
-                            <span class="tab-icon">📍</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="tab-icon"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path><circle cx="12" cy="10" r="3"></circle></svg>
                             Barangay
                         </label>
                         <label for="tab-province" class="toggle-label province-label">
-                            <span class="tab-icon">📍</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="tab-icon"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path><circle cx="12" cy="10" r="3"></circle></svg>
                             Province
                         </label>
                         <label for="tab-usc_id" class="toggle-label id-label">
-                            <span class="tab-icon">#</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="tab-icon"><line x1="4" x2="20" y1="9" y2="9"></line><line x1="4" x2="20" y1="15" y2="15"></line><line x1="10" x2="8" y1="3" y2="21"></line><line x1="16" x2="14" y1="3" y2="21"></line></svg>
                             ID Number
                         </label>
                         <label for="tab-name" class="toggle-label name-label">
-                            <span class="tab-icon">👤</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="tab-icon"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                             Name
                         </label>
 
@@ -128,7 +127,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($searchValue)) {
                             autocomplete="off"
                         >
                         <button type="submit" class="btn-search">
-                            <span class="search-icon">🔍</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
                             Search
                         </button>
                     </div>
@@ -201,5 +200,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($searchValue)) {
     </script>
 </body>
 </html>
+
 
 
