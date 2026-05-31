@@ -511,7 +511,7 @@ require_once __DIR__ . '/../includes/icons.php';
 
                 if (data.success) {
                     if (modalType === 'signout') {
-                        window.location.href = 'confirmation.php?action=signout&user_id=' + userId;
+                        window.location.href = 'index.php?message=' + encodeURIComponent('Successfully signed out!');
                     } else {
                         window.location.href = 'index.php?message=' + encodeURIComponent('Successfully signed in!');
                     }
