@@ -38,11 +38,11 @@ require_once __DIR__ . '/../includes/icons.php';
         <!-- User Portal Content -->
         <div class="portal-content active" id="user-portal">
             <div class="action-cards" id="action-cards-container">
-                <button type="button" class="action-card" id="signin-btn">
+                <a href="#" class="action-card" id="signin-btn">
                     <div class="card-icon signin-icon"><?php echo Icons::signIn(); ?></div>
                     <h3>Sign In</h3>
                     <p>Returning visitor? Enter your ID number to sign in.</p>
-                </button>
+                </a>
 
                 <a href="register.php" class="action-card">
                     <div class="card-icon register-icon"><?php echo Icons::register(); ?></div>
@@ -219,7 +219,10 @@ require_once __DIR__ . '/../includes/icons.php';
             modalOverlay.classList.remove('active');
         }
 
-        signinBtn.addEventListener('click', showSignInForm);
+        signinBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            showSignInForm();
+        });
         cancelBtn.addEventListener('click', showActionCards);
         modalCloseBtn.addEventListener('click', closeModal);
         modalCancelBtn.addEventListener('click', closeModal);
