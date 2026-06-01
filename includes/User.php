@@ -16,7 +16,60 @@ class User {
         return $stmt->get_result()->fetch_assoc();
     }
 
-    // Register new user
+    // Find user by visitor ID (for non-USC visitors)
+    public function findByVisitorId($visitor_id) {
+        $stmt = $this->conn->prepare("SELECT * FROM users WHERE visitor_id = ?");
+        $stmt->bind_param("s", $visitor_id);
+        $stmt->execute();
+        return $stmt->get_result()->fetch_assoc();
+    }
+
+    // Generate unique visitor ID for non-USC visitors
+    private function generateVisitorId() {
+        $stmt = $this->conn->prepare(
+            "SELECT visitor_id FROM users WHERE visitor_id IS NOT NULL ORDER BY id DESC LIMIT 1"
+        );
+        $stmt->execute();
+        $result = $stmt->get_result()->fetch_assoc();
+
+        if ($result && $result['visitor_id']) {
+            $lastId = intval(substr($result['visitor_id'], 8));
+            $nextId = $lastId + 1;
+        } else {
+            $nextId = 1;
+        }
+
+        return 'VISITOR_' . str_pad($nextId, 5, '0', STR_PAD_LEFT);
+    }
+
+    // Register non-USC visitor
+    public function registerNonUscVisitor($first_name, $middle_name, $last_name, $barangay, $city, $province, $contact_number, $email) {
+        $visitor_id = $this->generateVisitorId();
+
+        $stmt = $this->conn->prepare(
+            "INSERT INTO users (visitor_type, visitor_id, first_name, middle_name, last_name, barangay, city, province, contact_number, email)
+             VALUES ('NON_USC', ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        );
+
+        $stmt->bind_param("sssssssss", $visitor_id, $first_name, $middle_name, $last_name, $barangay, $city, $province, $contact_number, $email);
+
+        if ($stmt->execute()) {
+            return ['success' => true, 'message' => 'Visitor registered successfully', 'user_id' => $this->conn->insert_id, 'visitor_id' => $visitor_id];
+        } else {
+            return ['success' => false, 'message' => 'Registration failed: ' . $stmt->error];
+        }
+    }
+
+    // Get visitor type (USC or NON_USC)
+    public function getVisitorType($id) {
+        $stmt = $this->conn->prepare("SELECT visitor_type FROM users WHERE id = ?");
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $result = $stmt->get_result()->fetch_assoc();
+        return $result ? $result['visitor_type'] : null;
+    }
+
+    // Register new user (USC member)
     public function register($usc_id, $first_name, $middle_name, $last_name, $barangay, $city, $province, $contact_number, $email) {
         // Check if user already exists
         if ($this->findByUscId($usc_id)) {
