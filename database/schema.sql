@@ -5,7 +5,9 @@ USE contact_tracing;
 -- Users table
 CREATE TABLE IF NOT EXISTS users (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    usc_id VARCHAR(20) UNIQUE,
+    usc_id VARCHAR(20) UNIQUE NULL,
+    visitor_type ENUM('USC', 'NON_USC') DEFAULT 'USC',
+    visitor_id VARCHAR(20) UNIQUE NULL,
     first_name VARCHAR(100) NOT NULL,
     middle_name VARCHAR(100),
     last_name VARCHAR(100) NOT NULL,
@@ -14,8 +16,11 @@ CREATE TABLE IF NOT EXISTS users (
     province VARCHAR(100) NOT NULL,
     contact_number VARCHAR(20) NOT NULL,
     email VARCHAR(100),
+    is_signed_in BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_visitor_id (visitor_id),
+    INDEX idx_visitor_type (visitor_type)
 );
 
 -- Sign In/Out logs table

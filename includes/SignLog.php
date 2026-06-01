@@ -49,71 +49,100 @@ class SignLog {
     }
 
     // Search logs by user or timestamp criteria
-    public function searchLogs($searchType, $searchValue) {
+    public function searchLogs($searchType, $searchValue, $visitorTypeFilter = 'all') {
         $searchValue = trim($searchValue);
         if (empty($searchValue)) {
             return [];
         }
 
         $query =
-            "SELECT s.id, s.user_id, s.action, s.timestamp, u.first_name, u.last_name, u.usc_id, u.barangay, u.city, u.province
+            "SELECT s.id, s.user_id, s.action, s.timestamp, u.first_name, u.last_name, u.usc_id, u.visitor_id, u.visitor_type, u.barangay, u.city, u.province
              FROM sign_logs s
              JOIN users u ON s.user_id = u.id
              WHERE ";
 
+        $whereConditions = [];
+        $params = [];
+        $paramTypes = '';
+
         switch ($searchType) {
             case 'name':
-                $query .= "(u.first_name LIKE ? OR u.last_name LIKE ?)";
+                $whereConditions[] = "(u.first_name LIKE ? OR u.last_name LIKE ?)";
                 $searchVal = "%$searchValue%";
-                $stmt = $this->conn->prepare($query);
-                $stmt->bind_param("ss", $searchVal, $searchVal);
+                $params = [$searchVal, $searchVal];
+                $paramTypes = "ss";
                 break;
             case 'city':
-                $query .= "u.city LIKE ?";
+                $whereConditions[] = "u.city LIKE ?";
                 $searchVal = "%$searchValue%";
-                $stmt = $this->conn->prepare($query);
-                $stmt->bind_param("s", $searchVal);
+                $params = [$searchVal];
+                $paramTypes = "s";
                 break;
             case 'barangay':
-                $query .= "u.barangay LIKE ?";
+                $whereConditions[] = "u.barangay LIKE ?";
                 $searchVal = "%$searchValue%";
-                $stmt = $this->conn->prepare($query);
-                $stmt->bind_param("s", $searchVal);
+                $params = [$searchVal];
+                $paramTypes = "s";
                 break;
             case 'province':
-                $query .= "u.province LIKE ?";
+                $whereConditions[] = "u.province LIKE ?";
                 $searchVal = "%$searchValue%";
-                $stmt = $this->conn->prepare($query);
-                $stmt->bind_param("s", $searchVal);
+                $params = [$searchVal];
+                $paramTypes = "s";
                 break;
             case 'usc_id':
-                $query .= "u.usc_id = ?";
-                $stmt = $this->conn->prepare($query);
-                $stmt->bind_param("s", $searchValue);
+                $whereConditions[] = "u.usc_id = ?";
+                $params = [$searchValue];
+                $paramTypes = "s";
+                break;
+            case 'visitor_id':
+                $whereConditions[] = "u.visitor_id = ?";
+                $params = [$searchValue];
+                $paramTypes = "s";
                 break;
             case 'timestamp':
-                $query .= "s.timestamp LIKE ?";
+                $whereConditions[] = "s.timestamp LIKE ?";
                 $searchVal = "%$searchValue%";
-                $stmt = $this->conn->prepare($query);
-                $stmt->bind_param("s", $searchVal);
+                $params = [$searchVal];
+                $paramTypes = "s";
                 break;
             default:
                 return [];
         }
 
+        if ($visitorTypeFilter !== 'all') {
+            $whereConditions[] = "u.visitor_type = ?";
+            $params[] = $visitorTypeFilter;
+            $paramTypes .= "s";
+        }
+
+        $query .= implode(" AND ", $whereConditions) . " ORDER BY s.timestamp DESC";
+
+        $stmt = $this->conn->prepare($query);
+        if (!empty($params)) {
+            $stmt->bind_param($paramTypes, ...$params);
+        }
         $stmt->execute();
         return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }
 
     // Get all logs with user info
-    public function getAllLogs() {
-        $result = $this->conn->query(
-            "SELECT s.id, s.user_id, s.action, s.timestamp, u.first_name, u.last_name, u.usc_id, u.barangay, u.city, u.province
+    public function getAllLogs($visitorTypeFilter = 'all') {
+        $query = "SELECT s.id, s.user_id, s.action, s.timestamp, u.first_name, u.last_name, u.usc_id, u.visitor_id, u.visitor_type, u.barangay, u.city, u.province
              FROM sign_logs s
-             JOIN users u ON s.user_id = u.id
-             ORDER BY s.timestamp DESC"
-        );
-        return $result->fetch_all(MYSQLI_ASSOC);
+             JOIN users u ON s.user_id = u.id";
+
+        if ($visitorTypeFilter !== 'all') {
+            $query .= " WHERE u.visitor_type = ?";
+            $stmt = $this->conn->prepare($query . " ORDER BY s.timestamp DESC");
+            $stmt->bind_param("s", $visitorTypeFilter);
+            $stmt->execute();
+        } else {
+            $stmt = $this->conn->prepare($query . " ORDER BY s.timestamp DESC");
+            $stmt->execute();
+        }
+
+        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }
 }
 ?>

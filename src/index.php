@@ -66,12 +66,12 @@ require_once __DIR__ . '/../includes/icons.php';
             <div class="signin-form-container" id="signin-form-container">
                 <div class="signin-form-box">
                     <h2>Sign In</h2>
-                    <p class="signin-subtitle">Enter your ID number to retrieve your information and sign in.</p>
+                    <p class="signin-subtitle">Enter your USC ID or Visitor ID to retrieve your information and sign in.</p>
 
                     <form id="signin-form" method="POST" action="api/fetch-user.php">
                         <div class="form-group">
-                            <label for="id-number">ID Number</label>
-                            <input type="text" id="id-number" name="usc_id" placeholder="241105130" required autocomplete="off">
+                            <label for="id-number">ID Number or Visitor ID</label>
+                            <input type="text" id="id-number" name="usc_id" placeholder="241105130 or VISITOR_00001" required autocomplete="off">
                         </div>
 
                         <div class="form-actions">
@@ -85,13 +85,33 @@ require_once __DIR__ . '/../includes/icons.php';
             <!-- Register Form -->
             <div class="register-form-container" id="register-form-container">
                 <div class="register-form-box">
-                    <h2>Register New User</h2>
+                    <h2>Register</h2>
                     <p class="register-subtitle">Please fill in all required fields. You will be automatically signed in after registration.</p>
 
                     <form id="register-form">
                         <div class="form-group full-width">
-                            <label for="reg-id-number">ID Number (if USC student/faculty/staff)</label>
-                            <input type="text" id="reg-id-number" name="usc_id" placeholder="241105130" required autocomplete="off">
+                            <label>Registration Type <span class="required">*</span></label>
+                            <div class="visitor-type-toggle">
+                                <input type="radio" id="reg-type-usc" name="visitor_type" value="USC" checked>
+                                <input type="radio" id="reg-type-visitor" name="visitor_type" value="NON_USC">
+
+                                <label for="reg-type-usc" class="toggle-option usc-option">
+                                    <span>USC Member</span>
+                                </label>
+                                <label for="reg-type-visitor" class="toggle-option visitor-option">
+                                    <span>Visitor</span>
+                                </label>
+                                <div class="toggle-indicator"></div>
+                            </div>
+                        </div>
+
+                        <div class="form-group full-width" id="usc-id-group">
+                            <label for="reg-id-number">USC ID Number <span class="required">*</span></label>
+                            <input type="text" id="reg-id-number" name="usc_id" placeholder="241105130" autocomplete="off">
+                        </div>
+
+                        <div class="form-group full-width" id="visitor-info-message" style="display: none; background-color: #f0f4f8; padding: 12px; border-radius: 6px; border-left: 4px solid #4361ee; color: #4a5568; font-size: 13px;">
+                            <strong>Temporary Visitor ID:</strong> You will receive a temporary visitor ID after successfully registering and signing in.
                         </div>
 
                         <div class="form-row">
@@ -147,12 +167,12 @@ require_once __DIR__ . '/../includes/icons.php';
             <div class="signout-form-container" id="signout-form-container">
                 <div class="signout-form-box">
                     <h2>Sign Out</h2>
-                    <p class="signout-subtitle">Enter your ID number to confirm you want to sign out.</p>
+                    <p class="signout-subtitle">Enter your USC ID or Visitor ID to confirm you want to sign out.</p>
 
                     <form id="signout-form">
                         <div class="form-group">
-                            <label for="signout-id-number">ID Number</label>
-                            <input type="text" id="signout-id-number" name="usc_id" placeholder="241105130" required autocomplete="off">
+                            <label for="signout-id-number">ID Number or Visitor ID</label>
+                            <input type="text" id="signout-id-number" name="usc_id" placeholder="241105130 or VISITOR_00001" required autocomplete="off">
                         </div>
 
                         <div class="form-actions">
@@ -366,7 +386,8 @@ require_once __DIR__ . '/../includes/icons.php';
 
                 if (data.success) {
                     const user = data.user;
-                    document.getElementById('modal-id').textContent = user.usc_id;
+                    const displayId = user.visitor_type === 'NON_USC' ? user.visitor_id : user.usc_id;
+                    document.getElementById('modal-id').textContent = displayId + (user.visitor_type === 'NON_USC' ? ' (Temporary Visitor ID)' : '');
                     document.getElementById('modal-name').textContent = user.first_name + ' ' + user.last_name;
                     document.getElementById('modal-address').textContent = (user.barangay ? user.barangay + ', ' : '') + user.city + ', ' + user.province;
                     document.getElementById('modal-contact').textContent = user.contact_number;
@@ -388,9 +409,15 @@ require_once __DIR__ . '/../includes/icons.php';
             e.preventDefault();
             const formData = new FormData(registerForm);
             const data = Object.fromEntries(formData);
+            const visitorType = document.querySelector('input[name="visitor_type"]:checked').value;
 
-            if (!data.usc_id || !data.first_name || !data.last_name || !data.barangay || !data.city || !data.province || !data.contact_number || !data.email) {
+            if (!data.first_name || !data.last_name || !data.barangay || !data.city || !data.province || !data.contact_number || !data.email) {
                 alert('Please fill in all required fields');
+                return;
+            }
+
+            if (visitorType === 'USC' && !data.usc_id) {
+                alert('USC ID is required for USC members');
                 return;
             }
 
@@ -406,7 +433,15 @@ require_once __DIR__ . '/../includes/icons.php';
                 const result = await response.json();
 
                 if (result.success) {
-                    window.location.href = 'index.php?message=' + encodeURIComponent('Successfully registered and signed in!');
+                    if (visitorType === 'NON_USC' && result.visitor_id) {
+                        const message = 'Registration successful! Your temporary Visitor ID is: ' + result.visitor_id;
+                        showToast(message, 4000);
+                        setTimeout(() => {
+                            window.location.href = 'index.php?message=' + encodeURIComponent(message);
+                        }, 500);
+                    } else {
+                        window.location.href = 'index.php?message=' + encodeURIComponent('Successfully registered and signed in!');
+                    }
                 } else {
                     alert(result.message || 'Registration failed');
                 }
@@ -438,7 +473,8 @@ require_once __DIR__ . '/../includes/icons.php';
 
                 if (data.success) {
                     const user = data.user;
-                    document.getElementById('modal-id').textContent = user.usc_id;
+                    const displayId = user.visitor_type === 'NON_USC' ? user.visitor_id : user.usc_id;
+                    document.getElementById('modal-id').textContent = displayId + (user.visitor_type === 'NON_USC' ? ' (Temporary Visitor ID)' : '');
                     document.getElementById('modal-name').textContent = user.first_name + ' ' + user.last_name;
                     document.getElementById('modal-address').textContent = (user.barangay ? user.barangay + ', ' : '') + user.city + ', ' + user.province;
                     document.getElementById('modal-contact').textContent = user.contact_number;
@@ -494,6 +530,30 @@ require_once __DIR__ . '/../includes/icons.php';
 
         userToggle.addEventListener('change', () => updatePortal('user'));
         adminToggle.addEventListener('change', () => updatePortal('admin'));
+
+        // Visitor type toggle handler
+        const visitorTypeRadios = document.querySelectorAll('input[name="visitor_type"]');
+        const uscIdGroup = document.getElementById('usc-id-group');
+        const visitorInfoMessage = document.getElementById('visitor-info-message');
+        const uscIdInput = document.getElementById('reg-id-number');
+
+        function updateVisitorTypeDisplay() {
+            const selectedType = document.querySelector('input[name="visitor_type"]:checked').value;
+            if (selectedType === 'USC') {
+                uscIdGroup.style.display = 'block';
+                visitorInfoMessage.style.display = 'none';
+                uscIdInput.required = true;
+            } else {
+                uscIdGroup.style.display = 'none';
+                visitorInfoMessage.style.display = 'block';
+                uscIdInput.required = false;
+                uscIdInput.value = '';
+            }
+        }
+
+        visitorTypeRadios.forEach(radio => {
+            radio.addEventListener('change', updateVisitorTypeDisplay);
+        });
 
         adminLoginForm.addEventListener('submit', async (e) => {
             e.preventDefault();

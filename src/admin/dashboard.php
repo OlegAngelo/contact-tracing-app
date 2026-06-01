@@ -11,16 +11,19 @@ if (!isset($_SESSION['admin_logged_in'])) {
 $signLog = new SignLog($conn);
 $searchType = isset($_POST['searchType']) ? $_POST['searchType'] : 'city';
 $searchValue = isset($_POST['searchValue']) ? $_POST['searchValue'] : '';
+$visitorTypeFilter = isset($_POST['visitorTypeFilter']) ? $_POST['visitorTypeFilter'] : 'all';
 $results = [];
 
 // Load recent visitor logs by default
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($searchValue)) {
-    $logs = $signLog->searchLogs($searchType, $searchValue);
+    $logs = $signLog->searchLogs($searchType, $searchValue, $visitorTypeFilter);
     foreach ($logs as $log) {
         $results[] = [
             'log_id' => $log['id'],
             'user_id' => $log['user_id'],
             'usc_id' => $log['usc_id'],
+            'visitor_id' => $log['visitor_id'],
+            'visitor_type' => $log['visitor_type'],
             'first_name' => $log['first_name'],
             'last_name' => $log['last_name'],
             'barangay' => $log['barangay'],
@@ -32,12 +35,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($searchValue)) {
     }
 } else {
     // Load all visitor logs by default on page load
-    $allLogs = $signLog->getAllLogs();
+    $allLogs = $signLog->getAllLogs($visitorTypeFilter);
     foreach ($allLogs as $log) {
         $results[] = [
             'log_id' => $log['id'],
             'user_id' => $log['user_id'],
             'usc_id' => $log['usc_id'],
+            'visitor_id' => $log['visitor_id'],
+            'visitor_type' => $log['visitor_type'],
             'first_name' => $log['first_name'],
             'last_name' => $log['last_name'],
             'barangay' => $log['barangay'],
@@ -84,6 +89,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($searchValue)) {
 
             <div class="search-tabs-container">
                 <form method="POST" class="search-form" id="searchForm">
+                    <div class="visitor-type-filter-container">
+                        <label for="visitorTypeFilter" class="filter-label">Filter by Visitor Type:</label>
+                        <select id="visitorTypeFilter" name="visitorTypeFilter" class="filter-select" onchange="document.getElementById('searchForm').submit()">
+                            <option value="all" <?php echo $visitorTypeFilter === 'all' ? 'selected' : ''; ?>>All Visitors</option>
+                            <option value="USC" <?php echo $visitorTypeFilter === 'USC' ? 'selected' : ''; ?>>USC Members Only</option>
+                            <option value="NON_USC" <?php echo $visitorTypeFilter === 'NON_USC' ? 'selected' : ''; ?>>Non-USC Visitors Only</option>
+                        </select>
+                    </div>
                     <div class="toggle-tabs">
                         <input type="radio" id="tab-city" name="searchType" value="city" <?php echo $searchType === 'city' ? 'checked' : ''; ?>>
                         <input type="radio" id="tab-barangay" name="searchType" value="barangay" <?php echo $searchType === 'barangay' ? 'checked' : ''; ?>>
@@ -153,7 +166,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($searchValue)) {
                         <thead>
                             <tr>
                                 <th>Log ID</th>
-                                <th>ID Number</th>
+                                <th>ID</th>
+                                <th>Type</th>
                                 <th>Name</th>
                                 <th>Action</th>
                                 <th>Barangay</th>
@@ -166,7 +180,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($searchValue)) {
                             <?php foreach ($results as $u): ?>
                                 <tr>
                                     <td><?php echo htmlspecialchars($u['log_id']); ?></td>
-                                    <td><?php echo htmlspecialchars($u['usc_id']); ?></td>
+                                    <td><?php echo htmlspecialchars($u['visitor_type'] === 'USC' ? $u['usc_id'] : $u['visitor_id']); ?></td>
+                                    <td><span class="visitor-type-badge <?php echo $u['visitor_type'] === 'USC' ? 'usc' : 'non-usc'; ?>"><?php echo htmlspecialchars($u['visitor_type']); ?></span></td>
                                     <td><?php echo htmlspecialchars($u['first_name'] . ' ' . $u['last_name']); ?></td>
                                     <td><?php echo htmlspecialchars($u['action']); ?></td>
                                     <td><?php echo htmlspecialchars($u['barangay']); ?></td>

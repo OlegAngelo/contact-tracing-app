@@ -928,6 +928,64 @@ footer {
     margin-bottom: 20px;
 }
 
+/* Visitor Type Toggle */
+.visitor-type-toggle {
+    position: relative;
+    width: 100%;
+    max-width: 300px;
+    height: 44px;
+    background-color: #ececf0;
+    border-radius: 30px;
+    display: flex;
+    align-items: center;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+    margin-top: 8px;
+}
+
+.visitor-type-toggle input {
+    display: none;
+}
+
+.visitor-type-toggle .toggle-option {
+    position: relative;
+    flex: 1;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 500;
+    color: #1a202c;
+    cursor: pointer;
+    z-index: 2;
+    transition: color 0.3s ease;
+}
+
+#reg-type-usc:checked ~ .usc-option {
+    color: #4361ee;
+}
+
+#reg-type-visitor:checked ~ .visitor-option {
+    color: #4361ee;
+}
+
+.visitor-type-toggle .toggle-indicator {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: calc(50% - 3px);
+    height: calc(100% - 6px);
+    background: white;
+    border-radius: 25px;
+    transition: left 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    z-index: 1;
+}
+
+#reg-type-visitor:checked ~ .toggle-indicator {
+    left: calc(50% + 3px);
+}
+
 .register-form-box .full-width {
     grid-column: 1 / -1;
 }
@@ -1808,6 +1866,64 @@ footer {
 
 .results-table tbody tr:hover {
     background-color: #f7fafc;
+}
+
+/* Visitor Type Filter */
+.visitor-type-filter-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.filter-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1a202c;
+    white-space: nowrap;
+}
+
+.filter-select {
+    padding: 8px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 13px;
+    background-color: #f7fafc;
+    color: #1a202c;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.filter-select:hover {
+    border-color: #cbd5e0;
+    background-color: white;
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: #4361ee;
+    box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+}
+
+/* Visitor Type Badges */
+.visitor-type-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.visitor-type-badge.usc {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+.visitor-type-badge.non-usc {
+    background-color: #d1fae5;
+    color: #065f46;
 }
 
 @media (max-width: 768px) {
