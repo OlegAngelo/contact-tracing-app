@@ -40,7 +40,7 @@ class User {
     // Update user info
     public function update($id, $first_name, $middle_name, $last_name, $barangay, $city, $province, $contact_number, $email) {
         $stmt = $this->conn->prepare(
-            "UPDATE users SET first_name = ?, middle_name = ?, last_name = ?, barangay = ?, city = ?, province = ?, contact_number = ?, email = ?
+            "UPDATE users SET first_name = ?, middle_name = ?, last_name = ?, barangay = ?, city = ?, province = ?, contact_number = ?, email = ?, updated_at = CURRENT_TIMESTAMP
              WHERE id = ?"
         );
 
@@ -90,6 +90,12 @@ class User {
                 $query .= "usc_id = ?";
                 $stmt = $this->conn->prepare($query);
                 $stmt->bind_param("s", $searchValue);
+                break;
+            case 'timestamp':
+                $query .= "created_at LIKE ?";
+                $searchVal = "%$searchValue%";
+                $stmt = $this->conn->prepare($query);
+                $stmt->bind_param("s", $searchVal);
                 break;
             default:
                 return [];

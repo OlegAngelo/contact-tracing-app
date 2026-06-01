@@ -40,10 +40,67 @@ class SignLog {
         $stmt = $this->conn->prepare(
             "SELECT s.*, u.first_name, u.last_name, u.usc_id FROM sign_logs s
              JOIN users u ON s.user_id = u.id
-             WHERE DATE(s.timestamp) = ?
+             WHERE s.timestamp BETWEEN ? AND ?
              ORDER BY s.timestamp DESC"
         );
-        $stmt->bind_param("s", $date);
+        $stmt->bind_param("ss", $startDate, $endDate);
+        $stmt->execute();
+        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    }
+
+    // Search logs by user or timestamp criteria
+    public function searchLogs($searchType, $searchValue) {
+        $searchValue = trim($searchValue);
+        if (empty($searchValue)) {
+            return [];
+        }
+
+        $query =
+            "SELECT s.id, s.user_id, s.action, s.timestamp, u.first_name, u.last_name, u.usc_id, u.barangay, u.city, u.province
+             FROM sign_logs s
+             JOIN users u ON s.user_id = u.id
+             WHERE ";
+
+        switch ($searchType) {
+            case 'name':
+                $query .= "(u.first_name LIKE ? OR u.last_name LIKE ?)";
+                $searchVal = "%$searchValue%";
+                $stmt = $this->conn->prepare($query);
+                $stmt->bind_param("ss", $searchVal, $searchVal);
+                break;
+            case 'city':
+                $query .= "u.city LIKE ?";
+                $searchVal = "%$searchValue%";
+                $stmt = $this->conn->prepare($query);
+                $stmt->bind_param("s", $searchVal);
+                break;
+            case 'barangay':
+                $query .= "u.barangay LIKE ?";
+                $searchVal = "%$searchValue%";
+                $stmt = $this->conn->prepare($query);
+                $stmt->bind_param("s", $searchVal);
+                break;
+            case 'province':
+                $query .= "u.province LIKE ?";
+                $searchVal = "%$searchValue%";
+                $stmt = $this->conn->prepare($query);
+                $stmt->bind_param("s", $searchVal);
+                break;
+            case 'usc_id':
+                $query .= "u.usc_id = ?";
+                $stmt = $this->conn->prepare($query);
+                $stmt->bind_param("s", $searchValue);
+                break;
+            case 'timestamp':
+                $query .= "s.timestamp LIKE ?";
+                $searchVal = "%$searchValue%";
+                $stmt = $this->conn->prepare($query);
+                $stmt->bind_param("s", $searchVal);
+                break;
+            default:
+                return [];
+        }
+
         $stmt->execute();
         return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }
@@ -51,7 +108,7 @@ class SignLog {
     // Get all logs with user info
     public function getAllLogs() {
         $result = $this->conn->query(
-            "SELECT s.id, s.user_id, s.action, s.timestamp, u.first_name, u.last_name, u.usc_id
+            "SELECT s.id, s.user_id, s.action, s.timestamp, u.first_name, u.last_name, u.usc_id, u.barangay, u.city, u.province
              FROM sign_logs s
              JOIN users u ON s.user_id = u.id
              ORDER BY s.timestamp DESC"
