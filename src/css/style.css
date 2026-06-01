@@ -122,7 +122,7 @@ body.home-page {
     z-index: 1;
 }
 
-#admin-toggle:checked ~ .toggle-slider {
+#admin-toggle:checked ~ .toggle-slider-home {
     left: calc(50% + 4px);
 }
 
@@ -1504,6 +1504,7 @@ footer {
     transition: all 0.3s ease;
     white-space: nowrap;
     flex-shrink: 0;
+    width: 100%;
 }
 
 .search-tab:hover {
@@ -1523,6 +1524,7 @@ footer {
 
 .search-form {
     display: flex;
+    flex-direction: column;
     align-items: center;
     gap: 12px;
     width: 100%;
@@ -1532,6 +1534,7 @@ footer {
 .search-input-group {
     display: flex;
     align-items: center;
+    width: 100%;
     gap: 8px;
     flex: 1;
     min-width: 300px;
@@ -1596,10 +1599,9 @@ footer {
 .toggle-tabs {
     position: relative;
     width: 100%;
-    max-width: 600px;
     height: 44px;
     background-color: #ececf0;
-    border-radius: 30px;
+    border-radius: 30px; 
     display: flex;
     align-items: center;
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
@@ -1640,11 +1642,12 @@ footer {
 #tab-barangay:checked ~ .barangay-label,
 #tab-province:checked ~ .province-label,
 #tab-usc_id:checked ~ .id-label,
-#tab-name:checked ~ .name-label {
+#tab-name:checked ~ .name-label,
+#tab-timestamp:checked ~ .timestamp-label {
     color: #4361ee;
 }
 
-.toggle-slider {
+.toggle-slider-home {
     position: absolute;
     top: 3px;
     left: 3px;
@@ -1657,20 +1660,37 @@ footer {
     z-index: 1;
 }
 
+.toggle-slider {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: calc(17% - 3px);
+    height: calc(100% - 6px);
+    background: #fff;
+    border-radius: 25px;
+    transition: left 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    z-index: 1;
+}
+
 #tab-barangay:checked ~ .toggle-slider {
-    left: calc(20% + 3px);
+    left: calc(17% + 3px);
 }
 
 #tab-province:checked ~ .toggle-slider {
-    left: calc(40% + 3px);
+    left: calc(33% + 3px);
 }
 
 #tab-usc_id:checked ~ .toggle-slider {
-    left: calc(60% + 3px);
+    left: calc(50% + 3px);
 }
 
 #tab-name:checked ~ .toggle-slider {
-    left: calc(80% + 3px);
+    left: calc(66% + 3px);
+}
+
+#tab-timestamp:checked ~ .toggle-slider {
+    left: calc(82% + 3px);
 }
 
 .search-input {

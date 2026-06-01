@@ -37,7 +37,7 @@ require_once __DIR__ . '/../includes/icons.php';
                 Admin Portal
             </label>
 
-            <div class="toggle-slider"></div>
+            <div class="toggle-slider-home"></div>
         </div>
 
         <!-- User Portal Content -->

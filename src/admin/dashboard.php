@@ -1,7 +1,6 @@
 <?php
 session_start();
 require_once __DIR__ . '/../../config/db_config.php';
-require_once __DIR__ . '/../../includes/User.php';
 require_once __DIR__ . '/../../includes/SignLog.php';
 
 if (!isset($_SESSION['admin_logged_in'])) {
@@ -9,44 +8,43 @@ if (!isset($_SESSION['admin_logged_in'])) {
     exit;
 }
 
-$user = new User($conn);
 $signLog = new SignLog($conn);
 $searchType = isset($_POST['searchType']) ? $_POST['searchType'] : 'city';
 $searchValue = isset($_POST['searchValue']) ? $_POST['searchValue'] : '';
 $results = [];
 
-// Load all users on page load
+// Load recent visitor logs by default
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($searchValue)) {
-    $users = $user->search($searchType, $searchValue);
-    foreach ($users as $u) {
+    $logs = $signLog->searchLogs($searchType, $searchValue);
+    foreach ($logs as $log) {
         $results[] = [
-            'type' => 'user',
-            'user_id' => $u['id'],
-            'first_name' => $u['first_name'],
-            'last_name' => $u['last_name'],
-            'usc_id' => $u['usc_id'],
-            'barangay' => $u['barangay'],
-            'city' => $u['city'],
-            'province' => $u['province'],
-            'contact_number' => $u['contact_number'],
-            'email' => $u['email']
+            'log_id' => $log['id'],
+            'user_id' => $log['user_id'],
+            'usc_id' => $log['usc_id'],
+            'first_name' => $log['first_name'],
+            'last_name' => $log['last_name'],
+            'barangay' => $log['barangay'],
+            'city' => $log['city'],
+            'province' => $log['province'],
+            'action' => $log['action'],
+            'timestamp' => $log['timestamp']
         ];
     }
 } else {
-    // Load all users by default on page load
-    $allUsers = $user->search('city', '%');
-    foreach ($allUsers as $u) {
+    // Load all visitor logs by default on page load
+    $allLogs = $signLog->getAllLogs();
+    foreach ($allLogs as $log) {
         $results[] = [
-            'type' => 'user',
-            'user_id' => $u['id'],
-            'first_name' => $u['first_name'],
-            'last_name' => $u['last_name'],
-            'usc_id' => $u['usc_id'],
-            'barangay' => $u['barangay'],
-            'city' => $u['city'],
-            'province' => $u['province'],
-            'contact_number' => $u['contact_number'],
-            'email' => $u['email']
+            'log_id' => $log['id'],
+            'user_id' => $log['user_id'],
+            'usc_id' => $log['usc_id'],
+            'first_name' => $log['first_name'],
+            'last_name' => $log['last_name'],
+            'barangay' => $log['barangay'],
+            'city' => $log['city'],
+            'province' => $log['province'],
+            'action' => $log['action'],
+            'timestamp' => $log['timestamp']
         ];
     }
 }
@@ -76,22 +74,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($searchValue)) {
         <div class="admin-dashboard-header">
             <div>
                 <h2 class="dashboard-title">Admin Dashboard</h2>
-                <p class="dashboard-subtitle">Search and manage visitor records</p>
+                <p class="dashboard-subtitle">Search and review recent visitor logs</p>
             </div>
         </div>
 
         <div class="search-section">
-            <h3 class="section-title">Search Visitors</h3>
-            <p class="section-subtitle">Use the tabs below to search by different criteria.</p>
+            <h3 class="section-title">Search Visitor Logs</h3>
+            <p class="section-subtitle">Use the tabs below to search recent entry and exit logs.</p>
 
             <div class="search-tabs-container">
                 <form method="POST" class="search-form" id="searchForm">
                     <div class="toggle-tabs">
-                        <input type="radio" id="tab-city" name="searchType" value="city" checked>
-                        <input type="radio" id="tab-barangay" name="searchType" value="barangay">
-                        <input type="radio" id="tab-province" name="searchType" value="province">
-                        <input type="radio" id="tab-usc_id" name="searchType" value="usc_id">
-                        <input type="radio" id="tab-name" name="searchType" value="name">
+                        <input type="radio" id="tab-city" name="searchType" value="city" <?php echo $searchType === 'city' ? 'checked' : ''; ?>>
+                        <input type="radio" id="tab-barangay" name="searchType" value="barangay" <?php echo $searchType === 'barangay' ? 'checked' : ''; ?>>
+                        <input type="radio" id="tab-province" name="searchType" value="province" <?php echo $searchType === 'province' ? 'checked' : ''; ?>>
+                        <input type="radio" id="tab-usc_id" name="searchType" value="usc_id" <?php echo $searchType === 'usc_id' ? 'checked' : ''; ?>>
+                        <input type="radio" id="tab-name" name="searchType" value="name" <?php echo $searchType === 'name' ? 'checked' : ''; ?>>
+                        <input type="radio" id="tab-timestamp" name="searchType" value="timestamp" <?php echo $searchType === 'timestamp' ? 'checked' : ''; ?>>
 
                         <label for="tab-city" class="toggle-label city-label">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="tab-icon"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path><circle cx="12" cy="10" r="3"></circle></svg>
@@ -113,6 +112,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($searchValue)) {
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="tab-icon"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                             Name
                         </label>
+                        <label for="tab-timestamp" class="toggle-label name-label">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar size-3 mr-1"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M3 10h18"></path></svg>
+                            Time & Day
+                        </label>
 
                         <div class="toggle-slider"></div>
                     </div>
@@ -125,6 +128,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($searchValue)) {
                             class="search-input"
                             placeholder="Search by city..."
                             autocomplete="off"
+                            value="<?php echo htmlspecialchars($searchValue); ?>"
                         >
                         <button type="submit" class="btn-search">
                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
@@ -137,36 +141,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($searchValue)) {
 
         <div class="results-section">
             <div class="results-header">
-                <h3>Visitor Records</h3>
-                <p class="results-count"><?php echo count($results); ?> record<?php echo count($results) !== 1 ? 's' : ''; ?> found</p>
+                <h3>Recent Visitor Logs</h3>
+                <p class="results-count"><?php echo count($results); ?> log<?php echo count($results) !== 1 ? 's' : ''; ?> found</p>
             </div>
 
             <?php if (empty($results)): ?>
-                <div class="alert alert-info">No visitor records found.</div>
+                <div class="alert alert-info">No visitor logs found.</div>
             <?php else: ?>
                 <div class="results-table-container">
                     <table class="results-table">
                         <thead>
                             <tr>
+                                <th>Log ID</th>
                                 <th>ID Number</th>
                                 <th>Name</th>
+                                <th>Action</th>
                                 <th>Barangay</th>
                                 <th>City</th>
                                 <th>Province</th>
-                                <th>Contact</th>
-                                <th>Email</th>
+                                <th>Time & Day</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php foreach ($results as $u): ?>
                                 <tr>
+                                    <td><?php echo htmlspecialchars($u['log_id']); ?></td>
                                     <td><?php echo htmlspecialchars($u['usc_id']); ?></td>
                                     <td><?php echo htmlspecialchars($u['first_name'] . ' ' . $u['last_name']); ?></td>
+                                    <td><?php echo htmlspecialchars($u['action']); ?></td>
                                     <td><?php echo htmlspecialchars($u['barangay']); ?></td>
                                     <td><?php echo htmlspecialchars($u['city']); ?></td>
                                     <td><?php echo htmlspecialchars($u['province']); ?></td>
-                                    <td><?php echo htmlspecialchars($u['contact_number']); ?></td>
-                                    <td><?php echo htmlspecialchars($u['email']); ?></td>
+                                    <td><?php echo htmlspecialchars($u['timestamp']); ?></td>
                                 </tr>
                             <?php endforeach; ?>
                         </tbody>
@@ -186,20 +192,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($searchValue)) {
             barangay: 'Search by barangay...',
             province: 'Search by province...',
             usc_id: 'Search by ID number...',
-            name: 'Search by name...'
+            name: 'Search by name...',
+            timestamp: 'Search by time or day...'
         };
+
+        function updatePlaceholder() {
+            const selectedTab = document.querySelector('input[name="searchType"]:checked');
+            if (selectedTab) {
+                searchInput.placeholder = placeholders[selectedTab.value];
+            }
+        }
 
         toggleTabs.forEach(tab => {
             tab.addEventListener('change', () => {
-                const type = tab.value;
-                searchInput.placeholder = placeholders[type];
+                updatePlaceholder();
                 searchInput.focus();
-                searchInput.value = '';
+
+                if (searchInput.value.trim()) {
+                    searchForm.submit();
+                }
             });
         });
+
+        updatePlaceholder();
     </script>
 </body>
 </html>
-
-
-
